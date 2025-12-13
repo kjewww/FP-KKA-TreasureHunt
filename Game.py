@@ -1,4 +1,3 @@
-# Game.py
 import pygame
 import os
 from constants import WIDTH, HEIGHT, BLACK, BLUE, DARK_RED, YELLOW, RED, GRID_SIZE, WHITE
@@ -10,10 +9,18 @@ class Game:
     def __init__(self):
         # Setup layar
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Pacman-Like Treasure Hunt with Ghost-Like Enemies")
+        pygame.display.set_caption("Treasure Hunt")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
         self.button_font = pygame.font.Font(None, 28)
+        self.bgm = pygame.mixer.Sound(os.path.join('assets', 'bgm1.wav'))
+        self.bgm.set_volume(0.5)
+        self.lose_sound = pygame.mixer.Sound(os.path.join('assets', 'lose.wav'))
+        self.lose_sound.set_volume(0.7)
+        self.win_sound = pygame.mixer.Sound(os.path.join('assets', 'win.mp3'))
+        self.win_sound.set_volume(0.7)
+        self.get_item_sound = pygame.mixer.Sound(os.path.join('assets', 'get_item.wav'))
+        self.get_item_sound.set_volume(0.7)
         
         # Inisialisasi map
         self.map = Map()
@@ -29,12 +36,15 @@ class Game:
         # Initialize game objects
         self.init_game()
         
-    def init_game(self):
-        """Inisialisasi/reset semua objek game"""
+    def init_game(self): # inisialisasi game
+        self.map.select_random_map()
         self.player = Player(GRID_SIZE, GRID_SIZE)
         self.key_pos = self.map.get_random_position()
         self.treasure_pos = None
         self.has_key = False
+        self.win_sound.stop()
+        self.lose_sound.stop()
+        self.bgm.play(loops=-1)
         
         # Inisialisasi enemies dengan warna berbeda dan jarak minimum dari player
         enemy_colors = ['Blue', 'Red', 'Green']
@@ -46,15 +56,14 @@ class Game:
         
         self.game_state = 'playing'
         
+        # load sprite dri folder 'images'
     def load_sprite(self, filename):
-        """Load sprite dari folder images/ dengan path relatif"""
         path = os.path.join('images', filename)
         image = pygame.image.load(path).convert_alpha()
         image = pygame.transform.scale(image, (GRID_SIZE, GRID_SIZE))
         return image
     
     def handle_events(self):
-        """Handle semua events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -68,7 +77,6 @@ class Game:
                     self.running = False  # Quit game
     
     def handle_player_movement(self):
-        """Handle pergerakan player"""
         if self.game_state != 'playing':
             return
             
@@ -90,15 +98,14 @@ class Game:
         self.player.update()
     
     def update_enemies(self):
-        """Update semua enemies"""
         if self.game_state != 'playing':
             return
             
         for enemy in self.enemies:
             enemy.update(self.player, self.map.grid)
     
+    # cek collision antara player dengan key, treasure, dan enemies
     def check_collisions(self):
-        """Check collision dengan key, treasure, dan enemies"""
         if self.game_state != 'playing':
             return
             
@@ -106,18 +113,23 @@ class Game:
         if not self.has_key and self.player.colliderect(pygame.Rect(self.key_pos[0], self.key_pos[1], GRID_SIZE, GRID_SIZE)):
             self.has_key = True
             self.treasure_pos = self.map.get_random_position()
+            self.get_item_sound.play()
         
         # Cek collision dengan treasure
         if self.has_key and self.treasure_pos and self.player.colliderect(pygame.Rect(self.treasure_pos[0], self.treasure_pos[1], GRID_SIZE, GRID_SIZE)):
             self.game_state = 'won'
+            self.bgm.stop()
+            self.win_sound.play()
         
         # Cek collision dengan enemies
         for enemy in self.enemies:
             if self.player.colliderect(enemy):
                 self.game_state = 'lost'
+                self.bgm.stop()
+                self.lose_sound.play()
     
+    # draw tombol restart dan quit
     def draw_buttons(self):
-        """Draw tombol restart dan quit"""
         # Posisi tombol
         button_width = 200
         button_height = 50
@@ -150,8 +162,8 @@ class Game:
         quit_text_rect = quit_text.get_rect(center=self.quit_button.center)
         self.screen.blit(quit_text, quit_text_rect)
     
+    # menampilkan game over
     def draw_game_over_screen(self):
-        """Draw layar game over dengan message dan tombol"""
         # Semi-transparent overlay
         overlay = pygame.Surface((WIDTH, HEIGHT))
         overlay.set_alpha(180)
@@ -173,8 +185,8 @@ class Game:
         # Draw buttons
         self.draw_buttons()
     
+    # draw semua elemen game
     def draw(self):
-        """Draw semua objek di layar"""
         self.screen.fill(BLACK)
         self.map.draw(self.screen)
         
@@ -199,8 +211,8 @@ class Game:
         
         pygame.display.flip()
     
+    # loop game
     def run(self):
-        """Main game loop"""
         while self.running:
             self.handle_events()
             self.handle_player_movement()

@@ -25,8 +25,8 @@ class Player(pygame.Rect):
         self.animation_speed = 0.15  # Kecepatan animasi
         self.animation_counter = 0
 
+    # load semua sprite animasi
     def load_animations(self):
-        """Load semua sprite animasi"""
         self.animations = {
             'idle': [],
             'walk': []
@@ -46,8 +46,8 @@ class Player(pygame.Rect):
             img = pygame.transform.scale(img, (GRID_SIZE, GRID_SIZE))
             self.animations['walk'].append(img)
 
+    # get sprite saat ini berdasarkan animasi dan arah
     def get_current_sprite(self):
-        """Dapatkan sprite saat ini berdasarkan animasi dan arah"""
         frames = self.animations[self.current_animation]
         frame_index = int(self.animation_frame) % len(frames)
         sprite = frames[frame_index]
@@ -62,8 +62,8 @@ class Player(pygame.Rect):
         
         return sprite
 
+    # update frame
     def update_animation(self):
-        """Update frame animasi"""
         self.animation_counter += self.animation_speed
         self.animation_frame = self.animation_counter
         
@@ -142,7 +142,7 @@ class Player(pygame.Rect):
     def get_map_y(self):
         return self.grid_y
     
+    # draw player ke layar
     def draw(self, screen):
-        """Draw player dengan animasi"""
         sprite = self.get_current_sprite()
         screen.blit(sprite, (self.x, self.y))

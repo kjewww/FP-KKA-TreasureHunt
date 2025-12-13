@@ -1,4 +1,3 @@
-# Enemy.py
 import pygame
 import random
 import os
@@ -29,7 +28,6 @@ class Enemy(pygame.Rect):
         self.facing_direction = 'right'  # right atau left
 
     def load_animations(self):
-        """Load sprite animasi enemy"""
         self.walk_frames = []
         
         # Load walk sprites berdasarkan warna (2 frames)
@@ -40,7 +38,6 @@ class Enemy(pygame.Rect):
             self.walk_frames.append(img)
 
     def get_current_sprite(self):
-        """Dapatkan sprite saat ini"""
         frame_index = int(self.animation_frame) % len(self.walk_frames)
         sprite = self.walk_frames[frame_index]
         
@@ -50,13 +47,11 @@ class Enemy(pygame.Rect):
         
         return sprite
 
-    def update_animation(self):
-        """Update frame animasi"""
+    def update_animation(self): # Update frame animasi
         self.animation_counter += self.animation_speed
         self.animation_frame = self.animation_counter
 
-    def move_in_direction(self, direction, map_grid):
-        """Bergerak satu grid cell berdasarkan arah"""
+    def move_in_direction(self, direction, map_grid): # bergerak per grid/cell
         if self.moving or self.move_cooldown > 0:
             return False
             
@@ -82,8 +77,7 @@ class Enemy(pygame.Rect):
             return True
         return False
 
-    def update_movement(self):
-        """Update smooth movement animation"""
+    def update_movement(self): # Update posisi pixel agar animasi tidak kaku
         if self.move_cooldown > 0:
             self.move_cooldown -= 1
             
@@ -113,8 +107,7 @@ class Enemy(pygame.Rect):
         # Update animasi
         self.update_animation()
 
-    def is_valid_position(self, grid_x, grid_y, map_grid):
-        """Cek apakah posisi grid valid"""
+    def is_valid_position(self, grid_x, grid_y, map_grid): # cek apakah posisi valid
         if 0 <= grid_y < ROWS and 0 <= grid_x < COLS:
             return map_grid[grid_y][grid_x] == 0
         return False
@@ -125,8 +118,9 @@ class Enemy(pygame.Rect):
     def get_map_y(self):
         return self.grid_y
 
+    # implementasi BFS untuk shortest pathfinding ke player
+
     def calculate_new_direction(self, map_grid, dest_x, dest_y):
-        """BFS untuk menemukan jalur terpendek"""
         # Jika sudah di posisi target
         if self.grid_x == dest_x and self.grid_y == dest_y:
             return None
@@ -153,8 +147,8 @@ class Enemy(pygame.Rect):
 
         return None  # Tidak ada jalur
 
+
     def get_neighbors(self, current, mp, visited):
-        """Dapatkan tetangga yang valid"""
         neighbors = []
         num_rows = len(mp)
         num_cols = len(mp[0])
@@ -204,7 +198,6 @@ class Enemy(pygame.Rect):
             self.direction = new_direction
             self.move_in_direction(self.direction, map_grid)
     
-    def draw(self, screen):
-        """Draw enemy dengan animasi"""
+    def draw(self, screen): # Draw enemy di layar dgn animasi
         sprite = self.get_current_sprite()
         screen.blit(sprite, (self.x, self.y))
