@@ -4,7 +4,6 @@ import random
 import os
 from constants import GRID_SIZE, ROWS, COLS
 
-
 class Map:
     def __init__(self):
         self.grid1 = [
@@ -136,52 +135,50 @@ class Map:
             [1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ]
-
-        # self.grid = random.choice([self.grid1, self.grid2, self.grid3, self.grid4])
-
+        
+        # Store grids in a list for easy indexing
+        self.all_maps = [self.grid1, self.grid2, self.grid3, self.grid4, self.grid5]
+        self.current_map_index = 0
+        self.grid = self.grid1 # Default
+        
         self.wall_sprite = self.load_sprite('wall.png')
 
-    # map dipilih secara random
-    def select_random_map(self):
-        self.grid = random.choice(
-            [self.grid1, self.grid2, self.grid3, self.grid4, self.grid5])
+    def select_map(self, index):
+        """Select a specific map by index (0-4)"""
+        if 0 <= index < len(self.all_maps):
+            self.grid = self.all_maps[index]
+            self.current_map_index = index
 
-    # load sprite map
+    def select_random_map(self):
+        self.grid = random.choice(self.all_maps)
+
+    # ... (Keep load_sprite, get_random_position, draw exactly as they are) ...
     def load_sprite(self, filename):
-        path = os.path.join('images', filename)
+        path = os.path.join('assets', 'item', filename)
         image = pygame.image.load(path).convert_alpha()
         image = pygame.transform.scale(image, (GRID_SIZE, GRID_SIZE))
         return image
 
-    # Mendapatkan posisi random yang bebas (bukan wall)
     def get_random_position(self, min_distance_from=None, min_distance=5):
-        # min_distance_from: tuple (x, y) posisi yang harus dijauhi
-        # min_distance: jarak minimum dalam grid cells
-        max_attempts = 100  # Batasi percobaan untuk menghindari infinite loop
+        max_attempts = 100
         attempts = 0
-
         while attempts < max_attempts:
             grid_x = random.randint(1, COLS - 2)
             grid_y = random.randint(1, ROWS - 2)
             x = grid_x * GRID_SIZE
             y = grid_y * GRID_SIZE
 
-            if self.grid[grid_y][grid_x] == 0:  # Hanya 0 = bebas
-                # Jika ada posisi yang harus dijauhi, cek jaraknya
+            if self.grid[grid_y][grid_x] == 0:
                 if min_distance_from is not None:
                     from_grid_x = min_distance_from[0] // GRID_SIZE
                     from_grid_y = min_distance_from[1] // GRID_SIZE
-                    distance = abs(grid_x - from_grid_x) + \
-                        abs(grid_y - from_grid_y)
-
+                    distance = abs(grid_x - from_grid_x) + abs(grid_y - from_grid_y)
                     if distance >= min_distance:
                         return x, y
                 else:
                     return x, y
-
             attempts += 1
-
-        # Jika tidak menemukan posisi ideal, kembalikan posisi random biasa
+            
         while True:
             grid_x = random.randint(1, COLS - 2)
             grid_y = random.randint(1, ROWS - 2)
@@ -190,10 +187,8 @@ class Map:
             if self.grid[grid_y][grid_x] == 0:
                 return x, y
 
-    # draw map ke layar
     def draw(self, screen):
         for row in range(ROWS):
             for col in range(COLS):
                 if self.grid[row][col] == 1:
-                    screen.blit(self.wall_sprite,
-                                (col * GRID_SIZE, row * GRID_SIZE))
+                    screen.blit(self.wall_sprite, (col * GRID_SIZE, row * GRID_SIZE))
